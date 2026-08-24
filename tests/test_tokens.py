@@ -1,4 +1,4 @@
-from ctx_squeeze import estimate_tokens
+from ctx_squeeze import estimate_tokens, truncate_to_tokens
 
 
 def test_empty_string_is_zero():
@@ -51,3 +51,53 @@ def test_longer_prose_is_within_ten_percent_of_a_rough_word_count():
     # a real BPE tokenizer runs roughly one token per word for prose like
     # this; the heuristic should land in the same neighborhood
     assert words * 0.5 <= estimate_tokens(prose) <= words * 1.6
+
+
+def test_truncate_empty_budget_gives_empty_string():
+    assert truncate_to_tokens("hello world", 0) == ""
+
+
+def test_truncate_negative_budget_gives_empty_string():
+    assert truncate_to_tokens("hello world", -5) == ""
+
+
+def test_truncate_empty_text_gives_empty_string():
+    assert truncate_to_tokens("", 100) == ""
+
+
+def test_truncate_under_budget_returns_text_unchanged():
+    text = "short and sweet"
+    assert truncate_to_tokens(text, estimate_tokens(text) + 10) == text
+
+
+def test_truncate_result_never_exceeds_the_budget():
+    prose = (
+        "The nightly job started failing on Tuesday after the runner image "
+        "was bumped, and every run now spends eleven minutes reinstalling "
+        "dependencies from scratch before the tests even start."
+    )
+    for budget in (1, 5, 10, 20, 50):
+        truncated = truncate_to_tokens(prose, budget)
+        assert estimate_tokens(truncated) <= budget
+
+
+def test_truncate_returns_a_prefix():
+    prose = "one two three four five six seven eight nine ten"
+    truncated = truncate_to_tokens(prose, 5)
+    assert prose.startswith(truncated)
+
+
+def test_truncate_is_the_longest_prefix_that_fits():
+    prose = "one two three four five six seven eight nine ten"
+    budget = 5
+    truncated = truncate_to_tokens(prose, budget)
+    # one more character should either exceed the budget or run off the
+    # end of the string
+    next_len = len(truncated) + 1
+    assert next_len > len(prose) or estimate_tokens(prose[:next_len]) > budget
+
+
+def test_truncate_handles_cjk_text():
+    text = "你好世界你好世界"
+    truncated = truncate_to_tokens(text, 3)
+    assert truncated == "你好世"

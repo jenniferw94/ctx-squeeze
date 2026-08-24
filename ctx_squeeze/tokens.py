@@ -45,3 +45,26 @@ def estimate_tokens(text):
 
     total = letters / 4 + digits / 3 + cjk + newlines * 0.5 + symbols * 0.6
     return round(total)
+
+
+def truncate_to_tokens(text, n):
+    """Return the longest prefix of `text` that estimates at or under `n` tokens.
+
+    Every character estimate_tokens looks at adds a non-negative amount to
+    the running total, so the estimate is monotonic in prefix length and a
+    binary search over character offsets finds the cut point in O(log len)
+    calls instead of scanning one character at a time.
+    """
+    if n <= 0 or not text:
+        return ""
+    if estimate_tokens(text) <= n:
+        return text
+
+    lo, hi = 0, len(text)
+    while lo < hi:
+        mid = (lo + hi + 1) // 2
+        if estimate_tokens(text[:mid]) <= n:
+            lo = mid
+        else:
+            hi = mid - 1
+    return text[:lo]
