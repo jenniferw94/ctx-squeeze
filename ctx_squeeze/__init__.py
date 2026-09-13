@@ -1,4 +1,5 @@
 from .dedupe import jaccard, shingles
+from .messages import Message, PruneResult, parse_messages, prune_messages, to_dicts
 from .pipeline import SqueezeResult, squeeze
 from .scoring import score_segments, select_by_score
 from .segments import Segment, split_segments
@@ -15,4 +16,9 @@ __all__ = [
     "select_by_score",
     "squeeze",
     "SqueezeResult",
+    "Message",
+    "PruneResult",
+    "parse_messages",
+    "prune_messages",
+    "to_dicts",
 ]
