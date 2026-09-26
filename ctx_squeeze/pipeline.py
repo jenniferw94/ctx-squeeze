@@ -120,7 +120,8 @@ def squeeze(
     stages = [s.strip() for s in strategy.split(",") if s.strip()]
     for stage in stages:
         if stage not in _VALID_STAGES:
-            raise ValueError(f"unknown strategy stage: {stage!r}")
+            valid = ", ".join(sorted(_VALID_STAGES))
+            raise ValueError(f"unknown strategy stage: {stage!r} (valid stages: {valid})")
 
     indices = list(range(len(segments)))
     notes = []

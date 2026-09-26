@@ -58,7 +58,9 @@ def test_document_mode_unknown_strategy_reports_error(tmp_path, capsys):
     code = main(["--budget", "10", "--strategy", "bogus", str(src)])
 
     assert code == 1
-    assert "bogus" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "bogus" in err
+    assert "head-tail" in err and "score" in err and "dedupe" in err
 
 
 def test_reads_stdin_when_input_is_dash(tmp_path, monkeypatch, capsys):

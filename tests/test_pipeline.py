@@ -106,6 +106,15 @@ def test_unknown_strategy_stage_raises():
         squeeze("some text", budget=10, strategy="bogus")
 
 
+def test_unknown_strategy_stage_error_lists_valid_stages():
+    with pytest.raises(ValueError) as excinfo:
+        squeeze("some text", budget=10, strategy="bogus")
+    message = str(excinfo.value)
+    assert "bogus" in message
+    for stage in ("head-tail", "score", "dedupe"):
+        assert stage in message
+
+
 def test_final_tokens_never_exceed_budget_even_with_marker_overhead():
     paragraphs = [f"paragraph {i} " + "the " * 8 for i in range(30)]
     text = "\n\n".join(paragraphs)
